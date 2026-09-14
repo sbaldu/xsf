@@ -43,13 +43,13 @@ namespace detail {
     // Return NaN, handling both real and complex types.
     template <typename T>
     XSF_HOST_DEVICE inline typename std::enable_if<std::is_floating_point<T>::value, T>::type maybe_complex_NaN() {
-        return std::numeric_limits<T>::quiet_NaN();
+        return cxx::numeric_limits<T>::quiet_NaN();
     }
 
     template <typename T>
     XSF_HOST_DEVICE inline typename std::enable_if<!std::is_floating_point<T>::value, T>::type maybe_complex_NaN() {
         using V = typename T::value_type;
-        return {std::numeric_limits<V>::quiet_NaN(), std::numeric_limits<V>::quiet_NaN()};
+        return {cxx::numeric_limits<V>::quiet_NaN(), cxx::numeric_limits<V>::quiet_NaN()};
     }
 
     // Series evaluators.
@@ -77,7 +77,7 @@ namespace detail {
         for (std::uint64_t i = 0; i < max_terms; ++i) {
             term = g();
             result += term;
-            if (std::abs(term) < std::abs(result) * tol) {
+            if (cxx::abs(term) < cxx::abs(result) * tol) {
                 return result;
             }
         }
@@ -156,7 +156,7 @@ namespace detail {
     XSF_HOST_DEVICE std::pair<T, std::uint64_t>
     series_eval_kahan(Generator &&g, real_type_t<T> tol, std::uint64_t max_terms, T init_val = T(0)) {
 
-        using std::abs;
+        using cxx::abs;
         T sum = init_val;
         T comp = T(0);
         for (std::uint64_t i = 0; i < max_terms; ++i) {
@@ -285,7 +285,7 @@ namespace detail {
      * parameter, when the other parameters are known, and where F is monotonic with respect to the unknown parameter.
      */
     template <typename Function>
-    XSF_HOST_DEVICE inline std::tuple<double, double, double, double, int> bracket_root_for_cdf_inversion(
+    XSF_HOST_DEVICE inline cxx::tuple<double, double, double, double, int> bracket_root_for_cdf_inversion(
         Function func, double x0, double xmin, double xmax, double step0_left, double step0_right, double factor_left,
         double factor_right, bool increasing, std::uint64_t maxiter
     ) {
@@ -296,7 +296,7 @@ namespace detail {
             return {x0, x0, y0, y0, 0};
         }
 
-        double y0_sgn = std::signbit(y0);
+        double y0_sgn = cxx::signbit(y0);
 
         bool search_left;
         /* The frontier is the new leading endpoint of the expanding bracket. The
@@ -325,23 +325,23 @@ namespace detail {
         bool reached_boundary = false;
         for (std::uint64_t i = 0; i < maxiter; i++) {
             y_frontier = func(frontier);
-            y_frontier_sgn = std::signbit(y_frontier);
+            y_frontier_sgn = cxx::signbit(y_frontier);
             if (y_frontier_sgn != y_interior_sgn || (y_frontier == 0.0)) {
                 /* Stopping condition, func evaluated at endpoints of bracket has opposing signs,
                  * meeting requirement for bracketing root finder. (Or endpoint has reached a
                  * zero.) */
                 if (search_left) {
                     /* Ensure we return an interval (a, b) with a < b. */
-                    std::swap(interior, frontier);
-                    std::swap(y_interior, y_frontier);
+                    cxx::swap(interior, frontier);
+                    cxx::swap(y_interior, y_frontier);
                 }
                 return {interior, frontier, y_interior, y_frontier, 0};
             }
             if (reached_boundary) {
                 /* We've reached a boundary point without finding a root . */
                 return {
-                    std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(),
-                    std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(),
+                    cxx::numeric_limits<double>::quiet_NaN(), cxx::numeric_limits<double>::quiet_NaN(),
+                    cxx::numeric_limits<double>::quiet_NaN(), cxx::numeric_limits<double>::quiet_NaN(),
                     search_left ? 1 : 2
                 };
             }
@@ -361,14 +361,14 @@ namespace detail {
          * factor_left and factor_right are set appropriately, this should only happen due to
          * a bug in this function. Limiting the number of iterations is a defensive programming measure. */
         return {
-            std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(),
-            std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(), 3
+            cxx::numeric_limits<double>::quiet_NaN(), cxx::numeric_limits<double>::quiet_NaN(),
+            cxx::numeric_limits<double>::quiet_NaN(), cxx::numeric_limits<double>::quiet_NaN(), 3
         };
     }
 
     /* Find root of a scalar function using Chandrupatla's algorithm */
     template <typename Function>
-    XSF_HOST_DEVICE inline std::pair<double, int> find_root_chandrupatla(
+    XSF_HOST_DEVICE inline cxx::pair<double, int> find_root_chandrupatla(
         Function func, double x1, double x2, double f1, double f2, double rtol, double atol, std::uint64_t maxiter
     ) {
         if (f1 == 0) {
@@ -381,7 +381,7 @@ namespace detail {
         for (uint64_t i = 0; i < maxiter; i++) {
             double x = x1 + t * (x2 - x1);
             double f = func(x);
-            if (std::signbit(f) == std::signbit(f1)) {
+            if (cxx::signbit(f) == cxx::signbit(f1)) {
                 x3 = x1;
                 x1 = x;
                 f3 = f1;
@@ -395,31 +395,31 @@ namespace detail {
                 f1 = f;
             }
             double xm, fm;
-            if (std::abs(f2) < std::abs(f1)) {
+            if (cxx::abs(f2) < cxx::abs(f1)) {
                 xm = x2;
                 fm = f2;
             } else {
                 xm = x1;
                 fm = f1;
             }
-            double tol = 2.0 * rtol * std::abs(xm) + 0.5 * atol;
-            double tl = tol / std::abs(x2 - x1);
+            double tol = 2.0 * rtol * cxx::abs(xm) + 0.5 * atol;
+            double tl = tol / cxx::abs(x2 - x1);
             if (tl > 0.5 || fm == 0) {
                 return {xm, 0};
             }
             double xi = (x1 - x2) / (x3 - x2);
             double phi = (f1 - f2) / (f3 - f2);
-            double fl = 1.0 - std::sqrt(1.0 - xi);
-            double fh = std::sqrt(xi);
+            double fl = 1.0 - cxx::sqrt(1.0 - xi);
+            double fh = cxx::sqrt(xi);
 
             if ((fl < phi) && (phi < fh)) {
                 t = (f1 / (f2 - f1)) * (f3 / (f2 - f3)) + (f1 / (f3 - f1)) * (f2 / (f3 - f2)) * ((x3 - x1) / (x2 - x1));
             } else {
                 t = 0.5;
             }
-            t = std::fmin(std::fmax(t, tl), 1.0 - tl);
+            t = cxx::fmin(cxx::fmax(t, tl), 1.0 - tl);
         }
-        return {std::numeric_limits<double>::quiet_NaN(), 1};
+        return {cxx::numeric_limits<double>::quiet_NaN(), 1};
     }
 
     /* Find root of a scalar function using Newton-Raphson.
@@ -437,36 +437,36 @@ namespace detail {
     };
 
     template <typename Function>
-    XSF_HOST_DEVICE inline std::pair<double, NewtonRootFinderStatus> find_root_newton(
-        Function func, double x, double rtol = 4 * std::numeric_limits<double>::epsilon(), double atol = 0.0,
+    XSF_HOST_DEVICE inline cxx::pair<double, NewtonRootFinderStatus> find_root_newton(
+        Function func, double x, double rtol = 4 * cxx::numeric_limits<double>::epsilon(), double atol = 0.0,
         std::uint64_t maxiter = 100
     ) {
         if (maxiter == 0) {
             return {x, NewtonRootFinderStatus::MAX_ITERATIONS_EXCEEDED};
         }
-        if (std::isinf(x)) {
+        if (cxx::isinf(x)) {
             return {x, NewtonRootFinderStatus::INITIAL_GUESS_RETURNED_INF};
         }
         for (std::uint64_t i = 0; i < maxiter; i++) {
             auto [f, df] = func(x);
-            if (std::isnan(f) || std::isnan(df)) {
-                return {std::numeric_limits<double>::quiet_NaN(), NewtonRootFinderStatus::OBJECTIVE_RETURNED_NAN};
+            if (cxx::isnan(f) || cxx::isnan(df)) {
+                return {cxx::numeric_limits<double>::quiet_NaN(), NewtonRootFinderStatus::OBJECTIVE_RETURNED_NAN};
             }
             if (f == 0.0) {
                 return {x, NewtonRootFinderStatus::SUCCESS};
             }
-            if (!std::isfinite(f) || !std::isfinite(df)) {
-                return {std::numeric_limits<double>::quiet_NaN(), NewtonRootFinderStatus::OBJECTIVE_RETURNED_INF};
+            if (!cxx::isfinite(f) || !cxx::isfinite(df)) {
+                return {cxx::numeric_limits<double>::quiet_NaN(), NewtonRootFinderStatus::OBJECTIVE_RETURNED_INF};
             }
             if (df == 0.0) {
-                return {std::numeric_limits<double>::quiet_NaN(), NewtonRootFinderStatus::DERIVATIVE_ZERO};
+                return {cxx::numeric_limits<double>::quiet_NaN(), NewtonRootFinderStatus::DERIVATIVE_ZERO};
             }
             double step = f / df;
             double x_next = x - step;
-            if (!std::isfinite(x_next)) {
-                return {std::numeric_limits<double>::quiet_NaN(), NewtonRootFinderStatus::OBJECTIVE_RETURNED_INF};
+            if (!cxx::isfinite(x_next)) {
+                return {cxx::numeric_limits<double>::quiet_NaN(), NewtonRootFinderStatus::OBJECTIVE_RETURNED_INF};
             }
-            if (x == x_next || std::abs(step) <= rtol * std::abs(x) + atol) {
+            if (x == x_next || cxx::abs(step) <= rtol * cxx::abs(x) + atol) {
                 return {x_next, NewtonRootFinderStatus::SUCCESS};
             }
             x = x_next;

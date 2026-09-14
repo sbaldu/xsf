@@ -13,7 +13,7 @@ namespace detail {
         double a, b, c, d;
         T g;
 
-        if (alpha == -1 && std::abs(beta) == 1) {
+        if (alpha == -1 && cxx::abs(beta) == 1) {
             if (n == 0) {
                 return 1.0;
             } else if (n == 1) {
@@ -42,7 +42,7 @@ namespace detail {
             return 1.0;
         } else if (n == 1) {
             return 0.5 * (2.0 * (alpha + 1.0) + (alpha + beta + 2.0) * (x - 1.0));
-        } else if (alpha == -1 && std::abs(beta) == 1) {
+        } else if (alpha == -1 && cxx::abs(beta) == 1) {
             return ((n + beta) / (2.0 * n)) * (x - 1.0) * eval_jacobi(n - 1.0, 1.0, beta, x);
         } else {
             d = (alpha + beta + 2.0) * (x - 1.0) / (2.0 * (alpha + 1.0));
@@ -72,14 +72,14 @@ XSF_HOST_DEVICE inline float eval_jacobi(float n, float alpha, float beta, float
     );
 }
 
-XSF_HOST_DEVICE inline std::complex<double> eval_jacobi(double n, double alpha, double beta, std::complex<double> x) {
+XSF_HOST_DEVICE inline cxx::complex<double> eval_jacobi(double n, double alpha, double beta, cxx::complex<double> x) {
     return detail::eval_jacobi(n, alpha, beta, x);
 }
 
-XSF_HOST_DEVICE inline std::complex<float> eval_jacobi(float n, float alpha, float beta, std::complex<float> x) {
-    return static_cast<std::complex<float>>(detail::eval_jacobi(
+XSF_HOST_DEVICE inline cxx::complex<float> eval_jacobi(float n, float alpha, float beta, cxx::complex<float> x) {
+    return static_cast<cxx::complex<float>>(detail::eval_jacobi(
         static_cast<double>(n), static_cast<double>(alpha), static_cast<double>(beta),
-        static_cast<std::complex<double>>(x)
+        static_cast<cxx::complex<double>>(x)
     ));
 }
 
@@ -117,15 +117,15 @@ XSF_HOST_DEVICE inline float eval_sh_jacobi(std::ptrdiff_t n, float p, float q, 
            binom(2.0 * n + static_cast<double>(p) - 1.0, n);
 }
 
-XSF_HOST_DEVICE inline std::complex<double> eval_sh_jacobi(double n, double p, double q, std::complex<double> x) {
+XSF_HOST_DEVICE inline cxx::complex<double> eval_sh_jacobi(double n, double p, double q, cxx::complex<double> x) {
     return detail::eval_jacobi(n, p - q, q - 1.0, 2.0 * x - 1.0) / binom(2.0 * n + p - 1.0, n);
 }
 
-XSF_HOST_DEVICE inline std::complex<float> eval_sh_jacobi(float n, float p, float q, std::complex<float> x) {
-    return static_cast<std::complex<float>>(
+XSF_HOST_DEVICE inline cxx::complex<float> eval_sh_jacobi(float n, float p, float q, cxx::complex<float> x) {
+    return static_cast<cxx::complex<float>>(
         detail::eval_jacobi(
             static_cast<double>(n), static_cast<double>(p) - static_cast<double>(q), static_cast<double>(q) - 1.0,
-            2.0 * static_cast<std::complex<double>>(x) - 1.0
+            2.0 * static_cast<cxx::complex<double>>(x) - 1.0
         ) /
         binom(2.0 * static_cast<double>(n) + static_cast<double>(p) - 1.0, static_cast<double>(n))
     );

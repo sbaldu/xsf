@@ -163,9 +163,9 @@ namespace mathieu {
         int N;
 
         // This is sort of ad-hoc ...
-        double abs_q = std::abs(q);
+        double abs_q = cxx::abs(q);
         if (abs_q > 1.0) {
-            double qq = std::log10(abs_q); // I need to use size of q to compute N.
+            double qq = cxx::log10(abs_q); // I need to use size of q to compute N.
             N = m + 25 + 10 * qq;
         } else {
             N = m + 25;
@@ -217,8 +217,8 @@ namespace mathieu {
                 x_cos = xsf::cospi(phi / 180.0);
                 x_sin = xsf::sinpi(phi / 180.0);
             } else {
-                x_cos = std::cos(phi);
-                x_sin = std::sin(phi);
+                x_cos = cxx::cos(phi);
+                x_sin = cxx::sin(phi);
             }
             if constexpr (FuncParity == Parity::Even) {
                 tt = X(k) * x_cos;
