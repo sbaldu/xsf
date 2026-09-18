@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef __CUDACC__
+
 #include <algorithm>
 #include <cassert>
 #include <cinttypes>
@@ -13,6 +15,8 @@
 #include <tuple>
 #include <type_traits>
 #include <utility>
+
+#endif
 
 // Define math constants if they are not available
 #ifndef M_E
@@ -668,6 +672,8 @@ using decay = cuda::std::decay<T>;
 #endif
 #endif
 
+#ifndef __CUDACC__
+
 namespace xsf {
 
 // basic
@@ -721,3 +727,5 @@ template <typename T>
 using complex = complex_type_t<T>;
 
 } // namespace xsf
+
+#endif // __CUDACC__
