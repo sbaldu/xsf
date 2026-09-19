@@ -107,7 +107,7 @@ namespace detail {
 //
 template <typename T>
 XSF_HOST_DEVICE inline double gen_harmonic(T n, double a) {
-    if constexpr (std::is_same_v<T, double>) {
+    if constexpr (cxx::is_same_v<T, double>) {
         if (cxx::isnan(n)) {
             return cxx::numeric_limits<double>::quiet_NaN();
         }
@@ -176,7 +176,7 @@ XSF_HOST_DEVICE inline float gen_harmonic(T n, float a) {
 //
 template <typename T>
 XSF_HOST_DEVICE inline double normalized_gen_harmonic(T j, T k, T n, double a) {
-    if constexpr (std::is_same_v<T, double>) {
+    if constexpr (cxx::is_same_v<T, double>) {
         if (cxx::isnan(j) || cxx::isnan(k) || cxx::isnan(n)) {
             return cxx::numeric_limits<double>::quiet_NaN();
         }

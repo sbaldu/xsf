@@ -463,7 +463,7 @@ namespace cephes {
         XSF_HOST_DEVICE inline int temme_ik_series(double v, double x, double *K, double *K1) {
             double f, h, p, q, coef, sum, sum1, tolerance;
             double a, b, c, d, sigma, gamma1, gamma2;
-            std::uint64_t k;
+            cxx::uint64_t k;
             double gp;
             double gm;
 
@@ -522,7 +522,7 @@ namespace cephes {
          * Abramowitz and Stegun, Handbook of Mathematical Functions, 1972, 9.1.73 */
         XSF_HOST_DEVICE inline int CF1_ik(double v, double x, double *fv) {
             double C, D, f, a, b, delta, tiny, tolerance;
-            std::uint64_t k;
+            cxx::uint64_t k;
 
             /*
              * |x| <= |v|, CF1_ik converges rapidly
@@ -572,7 +572,7 @@ namespace cephes {
         XSF_HOST_DEVICE inline int CF2_ik(double v, double x, double *Kv, double *Kv1) {
 
             double S, C, Q, D, f, a, b, q, delta, tolerance, current, prev;
-            std::uint64_t k;
+            cxx::uint64_t k;
 
             /*
              * |x| >= |v|, CF2_ik converges rapidly

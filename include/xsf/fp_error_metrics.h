@@ -3,7 +3,7 @@
 namespace xsf {
 
 template <typename T>
-XSF_HOST_DEVICE typename std::enable_if<std::is_floating_point<T>::value, T>::type
+XSF_HOST_DEVICE typename cxx::enable_if<cxx::is_floating_point<T>::value, T>::type
 extended_absolute_error(T actual, T desired) {
     if (actual == desired || (cxx::isnan(actual) && cxx::isnan(desired))) {
         return T(0);
@@ -40,7 +40,7 @@ XSF_HOST_DEVICE T extended_absolute_error(cxx::complex<T> actual, cxx::complex<T
 }
 
 template <typename T>
-XSF_HOST_DEVICE typename std::enable_if<std::is_floating_point<T>::value, T>::type
+XSF_HOST_DEVICE typename cxx::enable_if<cxx::is_floating_point<T>::value, T>::type
 extended_relative_error(T actual, T desired) {
     T abs_error = extended_absolute_error(actual, desired);
     T abs_desired = cxx::abs(desired);

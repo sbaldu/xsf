@@ -43,7 +43,7 @@ namespace mathieu {
     // Get index of characteristic value in sorted array of eigenvalues.
     template <Parity FuncParity, typename T>
     XSF_HOST_DEVICE T cv_index(T m) {
-        static_assert(std::is_integral_v<T>, "m must be of integer type");
+        static_assert(cxx::is_integral_v<T>, "m must be of integer type");
 
         if constexpr (FuncParity == Parity::Even) {
             return m / 2;
@@ -95,7 +95,7 @@ namespace mathieu {
      * relation matrix as a function of the index into the diagonal. */
     template <Parity FuncParity, Parity OrderParity, typename U>
     XSF_HOST_DEVICE double sqrt_di(U j) {
-        static_assert(std::is_integral_v<U>, "j must be of integer type");
+        static_assert(cxx::is_integral_v<U>, "j must be of integer type");
         constexpr auto Even = Parity::Even;
         constexpr auto Odd = Parity::Odd;
         if constexpr (OrderParity == Odd) {

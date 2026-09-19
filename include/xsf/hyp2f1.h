@@ -61,7 +61,7 @@ namespace detail {
      * can lead to early termination of series which would have eventually converged
      * at a reasonable level of accuracy. We've bumped the iteration limit to 3000,
      * and may adjust it again based on further analysis. */
-    constexpr std::uint64_t hyp2f1_MAXITER = 3000;
+    constexpr cxx::uint64_t hyp2f1_MAXITER = 3000;
 
     XSF_HOST_DEVICE inline double four_gammas_lanczos(double u, double v, double w, double x) {
         /* Compute ratio of gamma functions using lanczos approximation.
@@ -243,7 +243,7 @@ namespace detail {
       private:
         double a_, b_, c_;
         cxx::complex<double> z_, term_;
-        std::uint64_t k_;
+        cxx::uint64_t k_;
     };
 
     class Hyp2f1Transform1Generator {
@@ -332,7 +332,7 @@ namespace detail {
       private:
         double d1_, d2_, d3_, d4_, a_, b_, c_, m_;
         cxx::complex<double> z_, log_neg_z_, factor_;
-        std::uint64_t k_;
+        cxx::uint64_t k_;
     };
 
     class Hyp2f1Transform2LimitSeriesCminusAIntGenerator {
@@ -403,7 +403,7 @@ namespace detail {
       private:
         double d1_, d2_, d3_, d4_, a_, b_, c_, m_, n_;
         cxx::complex<double> z_, log_neg_z_, factor_;
-        std::uint64_t k_;
+        cxx::uint64_t k_;
     };
 
     class Hyp2f1Transform2LimitFinitePartGenerator {
@@ -424,7 +424,7 @@ namespace detail {
       private:
         double b_, c_, m_;
         cxx::complex<double> z_, term_;
-        std::uint64_t k_;
+        cxx::uint64_t k_;
     };
 
     class LopezTemmeSeriesGenerator {
@@ -454,7 +454,7 @@ namespace detail {
         }
 
       private:
-        std::uint64_t n_;
+        cxx::uint64_t n_;
         double a_, b_, c_, phi_previous_, phi_;
         cxx::complex<double> z_, Z_;
     };
@@ -468,7 +468,7 @@ namespace detail {
                 auto series_generator = HypergeometricSeriesGenerator(a, b, 1 - m, 1.0 - z);
                 result += four_gammas(m, c, a + m, b + m) *
                           series_eval_fixed_length(
-                              series_generator, cxx::complex<double>{0.0, 0.0}, static_cast<std::uint64_t>(m)
+                              series_generator, cxx::complex<double>{0.0, 0.0}, static_cast<cxx::uint64_t>(m)
                           );
             }
             cxx::complex<double> prefactor = cxx::pow(-1.0, m + 1) * xsf::cephes::Gamma(c) /
@@ -482,7 +482,7 @@ namespace detail {
             result = four_gammas(-m, c, a, b) * cxx::pow(1.0 - z, m);
             auto series_generator1 = HypergeometricSeriesGenerator(a + m, b + m, 1 + m, 1.0 - z);
             result *= series_eval_fixed_length(
-                series_generator1, cxx::complex<double>{0.0, 0.0}, static_cast<std::uint64_t>(-m)
+                series_generator1, cxx::complex<double>{0.0, 0.0}, static_cast<cxx::uint64_t>(-m)
             );
             double prefactor = cxx::pow(-1.0, m + 1) * xsf::cephes::Gamma(c) *
                                (xsf::cephes::rgamma(a + m) * xsf::cephes::rgamma(b + m));
@@ -501,7 +501,7 @@ namespace detail {
         auto series_generator1 = Hyp2f1Transform2LimitFinitePartGenerator(b, c, m, z);
         cxx::complex<double> result = cephes::Gamma(c) * cephes::rgamma(a) * cxx::pow(-z, -b);
         result *=
-            series_eval_fixed_length(series_generator1, cxx::complex<double>{0.0, 0.0}, static_cast<std::uint64_t>(m));
+            series_eval_fixed_length(series_generator1, cxx::complex<double>{0.0, 0.0}, static_cast<cxx::uint64_t>(m));
         cxx::complex<double> prefactor =
             cephes::Gamma(c) * (cephes::rgamma(a) * cephes::rgamma(c - b) * cxx::pow(-z, -a));
         double n = c - a;

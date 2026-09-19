@@ -85,7 +85,7 @@ namespace cephes {
         constexpr double hyp2f1_EPS = 1.0e-13;
 
         constexpr double hyp2f1_ETHRESH = 1.0e-12;
-        constexpr std::uint64_t hyp2f1_MAXITER = 10000;
+        constexpr cxx::uint64_t hyp2f1_MAXITER = 10000;
 
         /* hys2f1 and hyp2f1ra depend on each other, so we need this prototype */
         XSF_HOST_DEVICE double hyp2f1ra(double a, double b, double c, double x, double *loss);
@@ -94,7 +94,7 @@ namespace cephes {
         /* The `loss` parameter estimates loss of significance */
         XSF_HOST_DEVICE double hys2f1(double a, double b, double c, double x, double *loss) {
             double f, g, h, k, m, s, u, umax;
-            std::uint64_t i;
+            cxx::uint64_t i;
             int ib, intflag = 0;
 
             if (cxx::abs(b) > cxx::abs(a)) {

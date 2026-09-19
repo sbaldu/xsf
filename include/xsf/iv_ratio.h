@@ -50,7 +50,7 @@ struct IvRatioCFTailGenerator {
   private:
     T a0_, as_;       // a[k] == a0 + as*k, k >= 1
     T b0_, bs_;       // b[k] == b0 + bs*k, k >= 1
-    std::uint64_t k_; // current index
+    cxx::uint64_t k_; // current index
 };
 
 // Computes f(v, x) using Perron's continued fraction.
@@ -59,7 +59,7 @@ struct IvRatioCFTailGenerator {
 // calculations in a higher precision, such as double-double, even if
 // the return type is hardcoded to be double.
 template <class T>
-XSF_HOST_DEVICE inline cxx::pair<double, std::uint64_t> _iv_ratio_cf(double v, double x, bool complement) {
+XSF_HOST_DEVICE inline cxx::pair<double, cxx::uint64_t> _iv_ratio_cf(double v, double x, bool complement) {
 
     int e;
     cxx::frexp(cxx::fmax(v, x), &e);

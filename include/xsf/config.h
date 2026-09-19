@@ -103,6 +103,11 @@
 namespace xsf::cxx {
 
 #if defined(__CUDACC__)
+
+using cuda::std::ptrdiff_t;
+using cuda::std::size_t;
+using cuda::std::uint64_t;
+
 template <typename T, size_t N>
 using array = cuda::std::array<T, N>;
 
@@ -115,7 +120,54 @@ using pair = cuda::std::pair<T1, T2>;
 
 template <typename... Types>
 using tuple = cuda::std::tuple<Types...>;
+
+template <typename T>
+using is_floating_point = cuda::std::is_floating_point<T>;
+
+template <typename T>
+using is_integral = cuda::std::is_integral<T>;
+
+template <typename T>
+inline constexpr bool is_integral_v = cuda::std::is_integral_v<T>;
+
+template <typename T>
+using is_signed = cuda::std::is_signed<T>;
+
+template <typename T>
+inline constexpr bool is_signed_v = cuda::std::is_signed_v<T>;
+
+template <typename T1, typename T2>
+using is_same = cuda::std::is_same<T1, T2>;
+
+template <typename T1, typename T2>
+inline constexpr bool is_same_v = cuda::std::is_same_v<T1, T2>;
+
+template <typename T>
+using make_unsigned = cuda::std::make_unsigned<T>;
+
+template <typename T>
+using make_unsigned_t = cuda::std::make_unsigned_t<T>;
+
+template <bool Cond, typename T = void>
+using enable_if = cuda::std::enable_if<Cond, T>;
+
+template <typename T>
+using decay = cuda::std::decay<T>;
+
+template <typename F>
+struct invoke_result {
+    using type = decltype(cuda::std::declval<F>()());
+};
+
+template <typename F>
+using invoke_result_t = typename invoke_result<F>::type;
+
 #else
+
+using std::ptrdiff_t;
+using std::size_t;
+using std::uint64_t;
+
 template <typename T, std::size_t N>
 using array = std::array<T, N>;
 
@@ -127,6 +179,47 @@ using pair = std::pair<T1, T2>;
 
 template <typename... Types>
 using tuple = std::tuple<Types...>;
+
+// Type traits
+template <typename T>
+using is_floating_point = std::is_floating_point<T>;
+
+template <typename T>
+using is_integral = std::is_integral<T>;
+
+template <typename T>
+inline constexpr bool is_integral_v = std::is_integral_v<T>;
+
+template <typename T>
+using is_signed = std::is_signed<T>;
+
+template <typename T>
+inline constexpr bool is_signed_v = std::is_signed_v<T>;
+
+template <typename T1, typename T2>
+using is_same = std::is_same<T1, T2>;
+
+template <typename T1, typename T2>
+inline constexpr bool is_same_v = std::is_same_v<T1, T2>;
+
+template <typename T>
+using make_unsigned = std::make_unsigned<T>;
+
+template <typename T>
+using make_unsigned_t = std::make_unsigned_t<T>;
+
+template <bool Cond, typename T = void>
+using enable_if = std::enable_if<Cond, T>;
+
+template <typename T>
+using decay = std::decay<T>;
+
+template <typename F>
+using invoke_result = std::invoke_result<F>;
+
+template <typename F>
+using invoke_result_t = std::invoke_result_t<F>;
+
 #endif
 
 #if defined(__CUDACC__)
@@ -651,14 +744,6 @@ XSF_HOST_DEVICE complex<T> pow(const T &x, const complex<T> &y) {
 #ifdef _LIBCUDACXX_COMPILER_NVRTC
 #include <cuda_runtime.h>
 #endif
-
-namespace xsf::cxx {
-
-// Other types and utilities
-template <typename T>
-using decay = cuda::std::decay<T>;
-
-} // namespace xsf::cxx
 
 #endif
 

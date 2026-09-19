@@ -12,14 +12,14 @@ namespace detail {
      * each time it is called.
      */
     template <typename Generator>
-    using generator_result_t = typename std::decay<typename std::invoke_result<Generator>::type>::type;
+    using generator_result_t = typename cxx::decay<typename cxx::invoke_result<Generator>::type>::type;
 
     /* Used to deduce the type of the numerator/denominator of a fraction. */
     template <typename Pair>
     struct pair_traits;
 
     template <typename T>
-    struct pair_traits<std::pair<T, T>> {
+    struct pair_traits<cxx::pair<T, T>> {
         using value_type = T;
     };
 
@@ -42,12 +42,12 @@ namespace detail {
 
     // Return NaN, handling both real and complex types.
     template <typename T>
-    XSF_HOST_DEVICE inline typename std::enable_if<std::is_floating_point<T>::value, T>::type maybe_complex_NaN() {
+    XSF_HOST_DEVICE inline typename cxx::enable_if<cxx::is_floating_point<T>::value, T>::type maybe_complex_NaN() {
         return cxx::numeric_limits<T>::quiet_NaN();
     }
 
     template <typename T>
-    XSF_HOST_DEVICE inline typename std::enable_if<!std::is_floating_point<T>::value, T>::type maybe_complex_NaN() {
+    XSF_HOST_DEVICE inline typename cxx::enable_if<!cxx::is_floating_point<T>::value, T>::type maybe_complex_NaN() {
         using V = typename T::value_type;
         return {cxx::numeric_limits<V>::quiet_NaN(), cxx::numeric_limits<V>::quiet_NaN()};
     }
@@ -55,7 +55,7 @@ namespace detail {
     // Series evaluators.
     template <typename Generator, typename T = generator_result_t<Generator>>
     XSF_HOST_DEVICE T
-    series_eval(Generator &g, T init_val, real_type_t<T> tol, std::uint64_t max_terms, const char *func_name) {
+    series_eval(Generator &g, T init_val, real_type_t<T> tol, cxx::uint64_t max_terms, const char *func_name) {
         /* Sum an infinite series to a given precision.
          *
          * g : a generator of terms for the series.
@@ -74,7 +74,7 @@ namespace detail {
          */
         T result = init_val;
         T term;
-        for (std::uint64_t i = 0; i < max_terms; ++i) {
+        for (cxx::uint64_t i = 0; i < max_terms; ++i) {
             term = g();
             result += term;
             if (cxx::abs(term) < cxx::abs(result) * tol) {
@@ -87,7 +87,7 @@ namespace detail {
     }
 
     template <typename Generator, typename T = generator_result_t<Generator>>
-    XSF_HOST_DEVICE T series_eval_fixed_length(Generator &g, T init_val, std::uint64_t num_terms) {
+    XSF_HOST_DEVICE T series_eval_fixed_length(Generator &g, T init_val, cxx::uint64_t num_terms) {
         /* Sum a fixed number of terms from a series.
          *
          * g : a generator of terms for the series.
@@ -99,7 +99,7 @@ namespace detail {
          *
          */
         T result = init_val;
-        for (std::uint64_t i = 0; i < num_terms; ++i) {
+        for (cxx::uint64_t i = 0; i < num_terms; ++i) {
             result += g();
         }
         return result;
@@ -153,13 +153,13 @@ namespace detail {
      * returns `(S[n], n)`.  Otherwise, returns `(S[max_terms], 0)`.
      */
     template <typename Generator, typename T = generator_result_t<Generator>>
-    XSF_HOST_DEVICE std::pair<T, std::uint64_t>
-    series_eval_kahan(Generator &&g, real_type_t<T> tol, std::uint64_t max_terms, T init_val = T(0)) {
+    XSF_HOST_DEVICE cxx::pair<T, cxx::uint64_t>
+    series_eval_kahan(Generator &&g, real_type_t<T> tol, cxx::uint64_t max_terms, T init_val = T(0)) {
 
         using cxx::abs;
         T sum = init_val;
         T comp = T(0);
-        for (std::uint64_t i = 0; i < max_terms; ++i) {
+        for (cxx::uint64_t i = 0; i < max_terms; ++i) {
             T term = g();
             kahan_step(sum, comp, term);
             if (abs(term) <= tol * abs(sum)) {
@@ -287,7 +287,7 @@ namespace detail {
     template <typename Function>
     XSF_HOST_DEVICE inline cxx::tuple<double, double, double, double, int> bracket_root_for_cdf_inversion(
         Function func, double x0, double xmin, double xmax, double step0_left, double step0_right, double factor_left,
-        double factor_right, bool increasing, std::uint64_t maxiter
+        double factor_right, bool increasing, cxx::uint64_t maxiter
     ) {
         double y0 = func(x0);
 
@@ -323,7 +323,7 @@ namespace detail {
         }
 
         bool reached_boundary = false;
-        for (std::uint64_t i = 0; i < maxiter; i++) {
+        for (cxx::uint64_t i = 0; i < maxiter; i++) {
             y_frontier = func(frontier);
             y_frontier_sgn = cxx::signbit(y_frontier);
             if (y_frontier_sgn != y_interior_sgn || (y_frontier == 0.0)) {
@@ -369,7 +369,7 @@ namespace detail {
     /* Find root of a scalar function using Chandrupatla's algorithm */
     template <typename Function>
     XSF_HOST_DEVICE inline cxx::pair<double, int> find_root_chandrupatla(
-        Function func, double x1, double x2, double f1, double f2, double rtol, double atol, std::uint64_t maxiter
+        Function func, double x1, double x2, double f1, double f2, double rtol, double atol, cxx::uint64_t maxiter
     ) {
         if (f1 == 0) {
             return {x1, 0};
@@ -439,7 +439,7 @@ namespace detail {
     template <typename Function>
     XSF_HOST_DEVICE inline cxx::pair<double, NewtonRootFinderStatus> find_root_newton(
         Function func, double x, double rtol = 4 * cxx::numeric_limits<double>::epsilon(), double atol = 0.0,
-        std::uint64_t maxiter = 100
+        cxx::uint64_t maxiter = 100
     ) {
         if (maxiter == 0) {
             return {x, NewtonRootFinderStatus::MAX_ITERATIONS_EXCEEDED};
@@ -447,7 +447,7 @@ namespace detail {
         if (cxx::isinf(x)) {
             return {x, NewtonRootFinderStatus::INITIAL_GUESS_RETURNED_INF};
         }
-        for (std::uint64_t i = 0; i < maxiter; i++) {
+        for (cxx::uint64_t i = 0; i < maxiter; i++) {
             auto [f, df] = func(x);
             if (cxx::isnan(f) || cxx::isnan(df)) {
                 return {cxx::numeric_limits<double>::quiet_NaN(), NewtonRootFinderStatus::OBJECTIVE_RETURNED_NAN};
@@ -476,14 +476,14 @@ namespace detail {
 
     template <typename T, typename U>
     XSF_HOST_DEVICE constexpr bool cmp_less(T t, U u) {
-        static_assert(std::is_integral_v<T> && std::is_integral_v<U>);
+        static_assert(cxx::is_integral_v<T> && cxx::is_integral_v<U>);
 
-        if constexpr (std::is_signed_v<T> == std::is_signed_v<U>) {
+        if constexpr (cxx::is_signed_v<T> == cxx::is_signed_v<U>) {
             return t < u;
-        } else if constexpr (std::is_signed_v<T>) {
-            return t < 0 || static_cast<std::make_unsigned_t<T>>(t) < u;
+        } else if constexpr (cxx::is_signed_v<T>) {
+            return t < 0 || static_cast<cxx::make_unsigned_t<T>>(t) < u;
         } else {
-            return u >= 0 && t < static_cast<std::make_unsigned_t<U>>(u);
+            return u >= 0 && t < static_cast<cxx::make_unsigned_t<U>>(u);
         }
     }
 

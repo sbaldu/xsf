@@ -93,7 +93,7 @@ namespace detail {
     };
 
     // Complex log of expansion coefficients for Euler-Maclaurin summation formula.
-    XSF_HOST_DEVICE inline cxx::complex<double> zeta_em_log_coeff(std::size_t n) {
+    XSF_HOST_DEVICE inline cxx::complex<double> zeta_em_log_coeff(cxx::size_t n) {
         cxx::complex<double> J(0.0, 1.0);
         cxx::complex<double> result;
         if (n < 50) {
@@ -121,10 +121,10 @@ namespace detail {
             /* Return NaN at pole since value depends on how z approaches 1.0. */
             return {cxx::numeric_limits<double>::quiet_NaN(), cxx::numeric_limits<double>::quiet_NaN()};
         }
-        std::size_t n = static_cast<std::size_t>(cxx::max(cxx::abs(z.imag()) / 4.0, 50.0));
-        std::size_t m = n;
+        cxx::size_t n = static_cast<cxx::size_t>(cxx::max(cxx::abs(z.imag()) / 4.0, 50.0));
+        cxx::size_t m = n;
         cxx::complex<double> result = 0.0;
-        for (std::size_t i = 1; i < n; i++) {
+        for (cxx::size_t i = 1; i < n; i++) {
             cxx::complex<double> term = cxx::pow(static_cast<double>(i), -z);
             result += term;
             // When z.real() > 1, series converges and we can consider early termination
@@ -146,7 +146,7 @@ namespace detail {
          */
         cxx::complex<double> log_poch = cxx::log(z);
         cxx::complex<double> log_factor = -(z + 1.0) * cxx::log(N);
-        for (std::size_t k = 1; k <= m; k++) {
+        for (cxx::size_t k = 1; k <= m; k++) {
             cxx::complex<double> term = cxx::exp(zeta_em_log_coeff(k) + log_factor + log_poch);
             result += term;
             if (cxx::abs(term) / cxx::abs(result) <= cxx::numeric_limits<double>::epsilon()) {
