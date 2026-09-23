@@ -495,7 +495,7 @@ namespace amos {
 
         std::complex<double> ck, cs, cscl, cscr, csgn, cspn, c1, c2, rz, sc1, sc2 = 0.0, st, s1, s2, zn;
         double arg, ascle, as2, bscle, c1i, c1m, c1r, fmr, sgn, yy;
-        int i, inu, iuf, kflag, nn, nw, nz;
+        int inu, iuf, kflag, nn, nw, nz;
         std::complex<double> cy[2] = {0.0};
         std::complex<double> css[3] = {0.0};
         std::complex<double> csr[3] = {0.0};
@@ -582,7 +582,7 @@ namespace amos {
                 s1 *= css[kflag - 1];
                 s2 *= css[kflag - 1];
                 cs = csr[kflag - 1];
-                for (i = 3; i < (n + 1); i++) {
+                for (auto i = 3ul; i < (n + 1); i++) {
                     st = s2;
                     s2 = ck * s2 + s1;
                     s1 = st;
@@ -828,7 +828,7 @@ namespace amos {
                 ad = (d1 > d2 ? d2 : d1);
                 ak = 24.0 + 9.0 * fid;
                 bk = 30.0 - 9.0 * fid;
-                for (int k = 1; k < 26; k++) {
+                for (auto k = 1; k < 26; k++) {
                     trm1 *= z3 / d1;
                     s1 += trm1;
                     trm2 *= z3 / d2;
@@ -5802,7 +5802,7 @@ namespace amos {
     }
 
     inline int unk2(
-        std::complex<double> z, double fnu, int kode, int mr, int n, std::complex<double> *y, double tol, double elim,
+        std::complex<double> z, double fnu, int kode, int mr, std::size_t n, std::complex<double> *y, double tol, double elim,
         double alim
     ) {
 
@@ -5825,7 +5825,7 @@ namespace amos {
             zeta2d, asumd, bsumd;
         double aarg, ang, aphi, asc, ascle, car, cpn, c2i, c2m, c2r, crsc, cscl, fmr, fn, fnf, rs1, sar, sgn, spn, x,
             yy;
-        int i, ib, iflag = 0, ifn, il, in, inu, iuf, k, kdflg, kflag, kk, nai, ndai, nw, nz, idum, j, ipard, ic;
+        int ib, iflag = 0, ifn, il, in, inu, iuf, k, kdflg, kflag, kk, nai, ndai, nw, nz, idum, j, ipard, ic;
 
         std::complex<double> cr1 = std::complex<double>(1.0, 1.73205080756887729);      /*   1 + sqrt(3)i  */
         std::complex<double> cr2 = std::complex<double>(-0.5, -8.66025403784438647e-1); /*      0.5 cr1    */
@@ -5880,7 +5880,8 @@ namespace amos {
         // CONJUGATION SINCE THE K FUNCTION IS REAL ON THE POSITIVE REAL AXIS
         //
         j = 2;
-        for (i = 1; i < (n + 1); i++) {
+        std::size_t i;
+        for (i = 1; i < (n + 1); ++i) {
             j = 3 - j;
             fn = fnu + (i - 1);
             unhj(zn, fn, 0, tol, &phi[j - 1], &arg[j - 1], &zeta1[j - 1], &zeta2[j - 1], &asum[j - 1], &bsum[j - 1]);
@@ -6048,7 +6049,7 @@ namespace amos {
                 return -1;
             }
             nz = n;
-            for (i = 0; i < n; i++) {
+            for (i = 0; i < n; ++i) {
                 y[i] = 0.0;
             }
             return nz;
@@ -6060,7 +6061,7 @@ namespace amos {
             s2 = cy[1];
             c1 = csr[kflag - 1];
             ascle = bry[kflag - 1];
-            for (i = ib; i < (n + 1); i++) {
+            for (i = ib; i < (n + 1); ++i) {
                 c2 = s2;
                 s2 = ck * s2 + s1;
                 s1 = c2;
@@ -6119,7 +6120,7 @@ namespace amos {
         kdflg = 1;
         ib -= 1;
         ic = ib - 1;
-        for (k = 1; k < (n + 1); k++) {
+        for (k = 1; k < (n + 1); ++k) {
             fn = fnu + (kk - 1);
             if (n > 2) {
                 goto L175;
@@ -6246,7 +6247,7 @@ namespace amos {
         cs = csr[iflag - 1];
         ascle = bry[iflag - 1];
         fn = inu + il;
-        for (i = 1; i < (il + 1); i++) {
+        for (i = 1; i < (il + 1); ++i) {
             c2 = s2;
             s2 = s1 + (fn + fnf) * rz * c2;
             s1 = c2;
@@ -6278,7 +6279,7 @@ namespace amos {
     }
 
     inline int uoik(
-        std::complex<double> z, double fnu, int kode, int ikflg, int n, std::complex<double> *y, double tol,
+        std::complex<double> z, double fnu, int kode, int ikflg, std::size_t n, std::complex<double> *y, double tol,
         double elim, double alim
     ) {
 
@@ -6311,12 +6312,12 @@ namespace amos {
         std::complex<double> arg, asum, bsum, cz, phi, sum, zb, zeta1;
         std::complex<double> zeta2, zn, zr;
         double aarg, aphi, ascle, ax, ay, fnn, gnn, gnu, rcz, x, yy;
-        int iform, init, nn;
+        int iform, init;
         double aic = 1.265512123484645396;
         std::complex<double> cwrk[16] = {0.};
 
         int nuf = 0;
-        nn = n;
+        auto nn = n;
         x = std::real(z);
         zr = z;
         if (x < 0.) {
@@ -6392,20 +6393,20 @@ namespace amos {
                         ay = std::imag(cz);
                         cz = ax * std::exp(ay);
                         if (uchk(cz, ascle, tol)) {
-                            for (int i = 0; i < nn; i++) {
+                            for (auto i = 0ul; i < nn; ++i) {
                                 y[i] = 0.;
                             }
                             return nn;
                         }
                     } else {
-                        for (int i = 0; i < nn; i++) {
+                        for (auto i = 0ul; i < nn; ++i) {
                             y[i] = 0.;
                         }
                         return nn;
                     }
                 }
             } else {
-                for (int i = 0; i < nn; i++) {
+                for (auto i = 0ul; i < nn; ++i) {
                     y[i] = 0.;
                 }
                 return nn;
@@ -6468,7 +6469,7 @@ namespace amos {
     }
 
     inline int wrsk(
-        std::complex<double> zr, double fnu, int kode, int n, std::complex<double> *y, std::complex<double> *cw,
+        std::complex<double> zr, double fnu, int kode, std::size_t n, std::complex<double> *y, std::complex<double> *cw,
         double tol, double elim, double alim
     ) {
 
@@ -6483,15 +6484,14 @@ namespace amos {
 
         std::complex<double> cinu, cscl, ct, c1, c2, rct, st;
         double act, acw, ascle, yy;
-        int i, nw, nz;
 
         //
         // I(FNU+I-1,Z) BY BACKWARD RECURRENCE FOR RATIOS
         // Y(I)=I(FNU+I,Z)/I(FNU+I-1,Z) FROM CRATI NORMALIZED BY THE
         // WRONSKIAN WITH K(FNU,Z) AND K(FNU+1,Z) FROM CBKNU.
         //
-        nz = 0;
-        nw = bknu(zr, fnu, kode, 2, cw, tol, elim, alim);
+        auto nz = 0;
+        auto nw = bknu(zr, fnu, kode, 2, cw, tol, elim, alim);
         if (nw != 0) {
             /* 50 */
             nz = -1;
@@ -6545,7 +6545,7 @@ namespace amos {
         if (n == 1) {
             return nz;
         }
-        for (i = 2; i < (n + 1); i++) {
+        for (auto i = 2ul; i < (n + 1); ++i) {
             cinu *= st;
             st = y[i - 1];
             y[i - 1] = cinu * cscl;
