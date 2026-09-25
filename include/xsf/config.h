@@ -162,6 +162,9 @@ struct invoke_result {
 template <typename F>
 using invoke_result_t = typename invoke_result<F>::type;
 
+template <typename... Ts>
+using void_t = cuda::std::void_t<Ts...>;
+
 #else
 
 using std::ptrdiff_t;
@@ -219,6 +222,9 @@ using invoke_result = std::invoke_result<F>;
 
 template <typename F>
 using invoke_result_t = std::invoke_result_t<F>;
+
+template <typename... Ts>
+using void_t = std::void_t<Ts...>;
 
 #endif
 
