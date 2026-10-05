@@ -758,7 +758,20 @@ namespace numpy {
                 exts[i] = dimensions[i];
             }
 
-            return {reinterpret_cast<T *>(src), {exts, strides}};
+            ptrdiff_t offset = 0;
+            bool is_empty = false;
+            for (npy_uintp i = 0; i < exts.size(); ++i) {
+                is_empty = is_empty || exts[i] == 0;
+            }
+            if (!is_empty) {
+                for (npy_uintp i = 0; i < strides.size(); ++i) {
+                    if (strides[i] < 0) {
+                        offset -= (exts[i] - 1) * strides[i];
+                    }
+                }
+            }
+
+            return {reinterpret_cast<T *>(src) - offset, {exts, strides, offset}};
         }
     };
 

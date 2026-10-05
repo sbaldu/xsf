@@ -4,18 +4,22 @@
 
 namespace xsf {
 
-template <typename T, typename = void>
-constexpr inline bool valid_extent = false;
+namespace detail {
 
-template <typename T>
-constexpr inline bool
-    valid_extent<T, cxx::void_t<typename T::index_type, typename T::size_type, typename T::rank_type>> = true;
+    template <typename T, typename = void>
+    constexpr inline bool valid_extent = false;
+
+    template <typename T>
+    constexpr inline bool
+        valid_extent<T, cxx::void_t<typename T::index_type, typename T::size_type, typename T::rank_type>> = true;
+
+} // namespace detail
 
 struct relaxed_layout {
     template <typename TExtents>
     class mapping {
       public:
-        static_assert(valid_extent<TExtents>, "TExtents must be a valid extents type.");
+        static_assert(detail::valid_extent<TExtents>, "TExtents must be a valid extents type.");
 
         using extents_type = TExtents;
         using index_type = typename extents_type::index_type;
@@ -27,10 +31,7 @@ struct relaxed_layout {
       private:
         extents_type m_extents;
         strides_type m_strides;
-
-        XSF_HOST_DEVICE constexpr auto wrap(index_type index, index_type extent) const {
-            return (index >= index_type{0}) ? index : extent + index;
-        }
+        index_type m_offset{0};
 
         template <cxx::size_t Rank, cxx::size_t MaxRank>
         struct rank_counter {};
@@ -38,15 +39,15 @@ struct relaxed_layout {
         template <cxx::size_t Rank, cxx::size_t MaxRank, typename TIndex, typename... TIndices>
         XSF_HOST_DEVICE constexpr auto
         compute_offset(rank_counter<Rank, MaxRank>, const TIndex &index, TIndices... indices) const noexcept {
-            const auto shifted_index = wrap(index, m_extents.extent(Rank));
-            return shifted_index * m_strides[Rank] + compute_offset(rank_counter<Rank + 1, MaxRank>{}, indices...);
+            return static_cast<index_type>(index) * m_strides[Rank] +
+                   compute_offset(rank_counter<Rank + 1, MaxRank>{}, indices...);
         }
 
         template <typename TIndex>
         XSF_HOST_DEVICE constexpr auto compute_offset(
             rank_counter<extents_type::rank() - 1, extents_type::rank()>, const TIndex &index
         ) const noexcept {
-            return wrap(index, m_extents.extent(extents_type::rank() - 1)) * m_strides[extents_type::rank() - 1];
+            return static_cast<index_type>(index) * m_strides[extents_type::rank() - 1];
         }
 
         XSF_HOST_DEVICE constexpr auto compute_offset(rank_counter<0, 0>) const noexcept { return index_type{0}; }
@@ -61,8 +62,9 @@ struct relaxed_layout {
                 }
             }
         }
-        XSF_HOST_DEVICE mapping(const extents_type &extents, const strides_type &strides)
-            : m_extents{extents}, m_strides{strides} {}
+        XSF_HOST_DEVICE
+        mapping(const extents_type &extents, const strides_type &strides, index_type offset = index_type{0})
+            : m_extents{extents}, m_strides{strides}, m_offset{offset} {}
 
         XSF_HOST_DEVICE mapping(const mapping &) noexcept = default;
         XSF_HOST_DEVICE mapping &operator=(const mapping &) = default;
@@ -72,14 +74,18 @@ struct relaxed_layout {
         XSF_HOST_DEVICE const auto &extents() const noexcept { return m_extents; }
         XSF_HOST_DEVICE const auto &strides() const noexcept { return m_strides; }
         XSF_HOST_DEVICE constexpr auto stride(rank_type i) const noexcept { return m_strides[i]; }
+        XSF_HOST_DEVICE constexpr index_type offset() const noexcept { return m_offset; }
 
         XSF_HOST_DEVICE constexpr auto required_span_size() const noexcept {
-            auto size = index_type{1};
+            auto size = m_offset + index_type{1};
             for (auto i = rank_type{0}; i < extents_type::rank(); ++i) {
                 if (m_extents.extent(i) == index_type{0}) {
                     return index_type{0};
                 }
-                size += (m_extents.extent(i) - 1) * ((m_strides[i] > 0) ? m_strides[i] : -m_strides[i]);
+                // Negative strides are covered by the offset, which shifts the origin of the mapping
+                if (m_strides[i] > index_type{0}) {
+                    size += (m_extents.extent(i) - 1) * m_strides[i];
+                }
             }
             return size;
         }
@@ -87,18 +93,18 @@ struct relaxed_layout {
         template <typename... TIndex>
         XSF_HOST_DEVICE constexpr auto operator()(TIndex... indices) const noexcept {
             static_assert(sizeof...(TIndex) == extents_type::rank(), "Number of indices must match rank.");
-            return compute_offset(rank_counter<0, extents_type::rank()>{}, indices...);
+            return m_offset + compute_offset(rank_counter<0, extents_type::rank()>{}, indices...);
         }
 
         XSF_HOST_DEVICE static constexpr auto is_unique() noexcept { return false; }
         XSF_HOST_DEVICE static constexpr auto is_exhaustive() noexcept { return false; }
-        XSF_HOST_DEVICE static constexpr auto is_strided() noexcept { return true; }
+        XSF_HOST_DEVICE constexpr auto is_strided() const noexcept { return m_offset == index_type{0}; }
         XSF_HOST_DEVICE static constexpr auto is_always_unique() noexcept { return false; }
         XSF_HOST_DEVICE static constexpr auto is_always_exhaustive() noexcept { return false; }
-        XSF_HOST_DEVICE static constexpr auto is_always_strided() noexcept { return true; }
+        XSF_HOST_DEVICE static constexpr auto is_always_strided() noexcept { return false; }
 
         friend XSF_HOST_DEVICE constexpr auto operator==(const mapping &lhs, const mapping &rhs) -> bool {
-            return lhs.m_extents == rhs.m_extents && lhs.m_strides == rhs.m_strides;
+            return lhs.m_extents == rhs.m_extents && lhs.m_strides == rhs.m_strides && lhs.m_offset == rhs.m_offset;
         }
     };
 };
