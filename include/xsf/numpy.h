@@ -20,8 +20,8 @@
 
 #include "cpu/dual.h"
 #include "error.h"
-#include "relaxed_layout.h"
 #include "mdspan.h"
+#include "relaxed_layout.h"
 
 /* PyUFunc_getfperr gets bits for current floating point error (fpe) status codes so we
  * can check for floating point errors and make proper calls to set_error in ufunc loops.
@@ -744,8 +744,10 @@ namespace numpy {
 
     template <typename T, typename Extents, typename AccessorPolicy>
     struct npy_traits<cxx::mdspan<T, Extents, relaxed_layout, AccessorPolicy>> {
-        static cxx::mdspan<T, Extents, relaxed_layout, AccessorPolicy>
-        get(char *src, const npy_intp *dimensions, const npy_intp *steps) {
+        using mdspan_type = cxx::mdspan<T, Extents, relaxed_layout, AccessorPolicy>;
+        using mapping_type = typename mdspan_type::mapping_type;
+
+        static mdspan_type get(char *src, const npy_intp *dimensions, const npy_intp *steps) {
             //            static_assert(sizeof(T) == sizeof(npy_type_t<T>), "NumPy type has different size than argument
             //            type");
 
@@ -759,20 +761,9 @@ namespace numpy {
                 exts[i] = dimensions[i];
             }
 
-            ptrdiff_t offset = 0;
-            bool is_empty = false;
-            for (npy_uintp i = 0; i < exts.size(); ++i) {
-                is_empty = is_empty || exts[i] == 0;
-            }
-            if (!is_empty) {
-                for (npy_uintp i = 0; i < strides.size(); ++i) {
-                    if (strides[i] < 0) {
-                        offset -= (exts[i] - 1) * strides[i];
-                    }
-                }
-            }
+            mapping_type mapping{Extents{exts}, strides};
 
-            return {reinterpret_cast<T *>(src) - offset, {exts, strides, offset}};
+            return {reinterpret_cast<T *>(src) - mapping.offset(), mapping};
         }
     };
 

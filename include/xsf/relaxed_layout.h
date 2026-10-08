@@ -63,8 +63,26 @@ struct relaxed_layout {
             }
         }
         XSF_HOST_DEVICE
-        mapping(const extents_type &extents, const strides_type &strides, index_type offset = index_type{0})
-            : m_extents{extents}, m_strides{strides}, m_offset{offset} {}
+        mapping(const extents_type &extents, const strides_type &strides)
+            : m_extents{extents}, m_strides{strides}, m_offset{0} {
+            /* Compute canonical offset as minimum offset needed to ensure mapping
+             * will not return negative values. */
+            bool is_empty = false;
+            for (rank_type i = 0; i < extents_type::rank(); ++i) {
+                is_empty = is_empty || m_extents.extent(i) == index_type{0};
+            }
+            if (!is_empty) {
+                /* Find how far below zero the mapping coud go if there if there was
+                 * no offset. This minimum occurs when the indices along negative-stride
+                 * dimensions are as large as possible, and the indices along positive-stride
+                 * dimensions are zero. */
+                for (rank_type i = 0; i < extents_type::rank(); ++i) {
+                    if (m_strides[i] < index_type{0}) {
+                        m_offset -= (m_extents.extent(i) - index_type{1}) * m_strides[i];
+                    }
+                }
+            }
+        }
 
         XSF_HOST_DEVICE mapping(const mapping &) noexcept = default;
         XSF_HOST_DEVICE mapping &operator=(const mapping &) = default;
