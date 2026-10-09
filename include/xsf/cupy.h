@@ -13,10 +13,10 @@ __device__ inline auto as_mdspan(const CArray<T, ndim, is_c_contiguous, index_32
 
     for (int i = 0; i < ndim; ++i) {
         exts[i] = static_cast<cxx::ptrdiff_t>(arr.shape_[i]);
-        strs[i] = static_cast<cxx::ptrdiff_t>(arr.strides_[i]) / static_cast<cxx:ptrdiff_t>(sizeof(T));
+        strs[i] = static_cast<cxx::ptrdiff_t>(arr.strides_[i]) / static_cast<cxx::ptrdiff_t>(sizeof(T));
     }
 
-    using Extents = cxx::dextents<std::ptrdiff_t, ndim>;
+    using Extents = cxx::dextents<cxx::ptrdiff_t, ndim>;
     using Mapping = relaxed_layout::mapping<Extents>;
 
     Mapping mapping{Extents(exts), strs};
